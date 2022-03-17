@@ -1,1 +1,225 @@
+/*
+1.1.	Условие: в текстовом файле содержатся строки, содержащие слова из латинских букв и цифры. 
+Преобразовать строки файла следующим образом: упорядочить слова по алфавиту и в конце добавить сумму цифр.
+1.2.	 Допущения
+a)	Размер файла не более 25Кб
+b)	Количество символов в строке не более 20
+c)	Десятичная система счисления
+d)	Одинаковые слова стоят в любой очередности
+e)	Если нет цифр в строке, то сумма ровна 0
+f)	Количество строк в файле не более 5
 
+*/
+
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <stdlib.h>
+#include <filesystem>
+#include <stdio.h>
+#include <ctype.h>
+#define N 20                            //максимальное кол-во слов
+using namespace std;
+
+//модуль проверки на содержание латиницы
+bool LatinAlphabet(char с) {
+    int ic;
+    ic = (int)с;
+    if (ic >= 65 && ic <= 90)
+        return true;
+    else if (ic >= 97 && ic <= 122)
+        return true;
+/*
+    for (int i = 'A'; i <= 'Z'; ++i)        //65-90
+        printf("%c = %d\n", i, i);
+    for (int i = 'a'; i <= 'z'; ++i)        //97-122
+        printf("%c = %d\n", i, i);
+ */
+    else{
+        return false;
+    }
+}
+
+/*void AlphabetSort(int N, char words[20][20], char cur[20]) {
+    for (int f = 0; f < N - 1; f++)
+        for (int t = f + 1; t < N; t++)
+            if (strcmp(words[f], words[t]) > 0)
+            {
+                strcpy_s(cur, words[f]);
+                strcpy_s(words[f], words[t]);
+                strcpy_s(words[t], cur);
+            }
+    for (int f = 0; f < N; f++)
+        cout << words[f] << "\n";
+}
+*/
+
+
+int main()
+{
+    string line;                      //переменная str для хранения строки
+    string path = "Test1.txt";
+    ifstream MyFile;                //создаем объект потока istream  с именем MyFile
+    size_t found;
+    int size = 0;
+    char words[N][20] = { 0 }, cur[20] = { 0 };     //создаем двумерный массив для обработки слов
+    int countWords = 0;                             //кол-во слов в предложении
+    int sum = 0;                                    //сумма
+    bool firstDigit = false;                        //первое вхождение цифры
+    MyFile.seekg(0, std::ios::end);
+    size = MyFile.tellg();           //размер файла
+    found = path.find_last_of(".");
+    MyFile.open(path);
+    if (!MyFile.is_open()) {
+        cout << "Error opening file!";
+        exit(1);
+    }
+    else if (MyFile.peek() == EOF){
+        cout << "K3. File is empty\n";             // если первый символ конец файла
+        exit(3);
+    }
+    else if (size>25000){              //если размер файла превышает 25кБ
+        //cout << "Ваш файл весит : " << size << " байт" << endl;
+        cout << "K4. Size of file more then 25KB\n";
+        exit(4);
+    }
+    else if (path.substr(found) != ".txt") {        //если расширение файла не .txt
+        cout << "K5. The file extension is not .txt \n";               
+        exit(5);
+    }
+    else {
+        int n = 0;
+        while (getline(MyFile, line))
+        {
+            n++;                                    //увеличиваем кол-во строк на 1
+            if (line.length() > 20) {               //если размер строки более 20 символов
+                cout << "K7. String size more than 20 characters\n";
+                exit(7);
+            }
+
+        if (n > 5) {                    //если строк более 5
+            cout << "K6. There are more than 5 rows\n";
+            cout << n;
+            exit(6);
+        }
+        //если все условия неправильной эквивалентности не выполняются приступаем к обработке
+        else{
+            char s1[20];                          //основная строка
+            char s2[20] = {0};                    //массив символов для слова
+            char* token1 = NULL;
+            //char* next_token1 = NULL;
+            char seps[] = " ";                   // строка разделителя
+            strcpy_s(s1, line.c_str());           //копируем строку в массив символов s1
+            string word;
+            string alpbet;
+            char* w;
+            int i = 0, j = 0;
+            for (i = 0; s1[i] != '\0';i++) {                 //пока не найден символ конца строки, проходим по элементам
+                if (LatinAlphabet(s1[i]) == true && s1[i] != ' ') {        //если символ латиница и не пробел
+                    s2[j] = tolower(s1[i]);                                      //скопировать слово в массив s2 с нижним регистром
+                    j++;
+                }
+
+               /* if (isdigit(s1[i])) {                              //если это цифра
+                    if(s1[i+1] != ' ' && s1[i + 1] == '\0')       //цифра вконце строки
+                        firstDigit = true;
+                        sum += s1[i] - '0';
+                }
+                */
+                if (!isdigit(s1[i]) && LatinAlphabet(s1[i])) {      //если это и не цифра и не буква
+                    cout << "K8. Data isn't correct\n";
+                    exit(8);
+                }
+
+                if (isdigit(s1[i])) {           //если это цифра
+                    if (s1[i+1] == ' ' || s1[i + 1] == '\0')       //и след пробел или символ заверш строки
+                        firstDigit = true;
+                    if(firstDigit)
+                        if (i == 0) {                    //если это 1й элемент
+                            if (s1[i + 1] != ' ' )        //и если за ним не пробел
+                                cout << "K8. Data isn't correct\n";
+                                exit(8);
+                        }
+                        else if (s1[i + 1] == '\0') {                  //если это последний элемент
+                            if (s1[i - 1] != ' ') {                       //и если перед нним не пробел
+                                cout << "K8. Data isn't correct\n";
+                                exit(8);
+                            }
+                        }   
+                        else if (s1[i + 1] != ' ' || s1[i - 1] != ' ') {             //если этот элемент не вначале и не вконце без отступов
+                            cout << "K8. Data isn't correct\n";
+                            exit(8);
+                        }
+                        else {
+                            sum += s1[i] - '0';
+                        }
+                }
+                else if (isdigit(s1[i])) {           //если это цифра и след. не пробел или зав. строки
+                    //или перед ней не пробел, если она не вначале строки
+                    if ((s1[i + 1] != ' ' || s1[i + 1] == '\0')|| (s1[i - 1] != ' ' && i != 0))
+                    cout << "K8. Data isn't correct\n";
+                }
+
+
+                if (s1[i] == ' '|| s1[i + 1] == '\0') {                 //если найден пробел или завершение строи
+                        for (int l = 0; l < N; l++)
+                            words[countWords][l] = s2[l];               //получаем двумерный массив из слов
+                    word = s2;
+                    alpbet += word;                                       //добавляем слово в новую строку (only латиница)
+                    alpbet += ' ';
+                    //printf("%s ", s2);
+                    memset(s2, 0, sizeof(s2));                          //обнуляем массив слова
+                    j = 0;                                              //обнуляем счетчик
+                    countWords++;                                       //увеличиваем число слов на 1
+                }
+            }
+            //cout << alpbet;
+            //AlphabetSort(N, words, cur);
+           // w = strtok_s(s1, seps, &next_token1);
+            /*token1 = strtok_s(s1, seps, &next_token1);
+            while (token1 != NULL)
+            {
+                // Get next token:
+                if (token1 != NULL)
+                {
+                    word = token1;
+                    printf(" %s\n", token1);
+                    token1 = strtok_s(NULL, seps, &next_token1);
+                    LatinAlphabet(&token1);
+                }
+            }
+            */
+           
+            //модуль сортировки по алфавиту
+            for (int f = 0; f < N - 1; f++)
+                for (int t = f + 1; t < N; t++)
+                    if (strcmp(words[f], words[t]) > 0)
+                    {
+                        strcpy_s(cur, words[f]);
+                        strcpy_s(words[f], words[t]);
+                        strcpy_s(words[t], cur);
+                    }
+            //вывод строк в консоль
+            bool firstAlph = false;                 //первая буква
+            for (int f = 0; f < N; f++)
+                if (words[f][0] != '\0') {
+                    if(!firstAlph){
+                        words[f][0] = toupper(words[f][0]);
+                        firstAlph = true;
+                    }
+                    cout << words[f] << " ";
+                }
+        }
+            cout << sum;
+            cout << endl;
+            countWords = 0;
+            sum = 0;
+            //очищаем данные после каждой строки
+            for (int f = 0; f < N; f++)
+                for (int t = 0; t < N; t++)
+                    words[f][t] = 0;
+    }
+
+    }
+    return 0;
+}
