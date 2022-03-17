@@ -60,6 +60,8 @@ int main()
     string line;                      //переменная str для хранения строки
     string path = "Test1.txt";
     ifstream MyFile;                //создаем объект потока istream  с именем MyFile
+    ofstream FileRecord;
+    FileRecord.open("Nonamefile.txt");
     size_t found;
     int size = 0;
     char words[N][20] = { 0 }, cur[20] = { 0 };     //создаем двумерный массив для обработки слов
@@ -126,7 +128,7 @@ int main()
                         sum += s1[i] - '0';
                 }
                 */
-                if (!isdigit(s1[i]) && LatinAlphabet(s1[i])) {      //если это и не цифра и не буква
+                if (!isdigit(s1[i]) && !LatinAlphabet(s1[i]) && s1[i]!=' ') {      //если это и не цифра и не буква и не пробел
                     cout << "K8. Data isn't correct\n";
                     exit(8);
                 }
@@ -136,22 +138,29 @@ int main()
                         firstDigit = true;
                     if(firstDigit)
                         if (i == 0) {                    //если это 1й элемент
-                            if (s1[i + 1] != ' ' )        //и если за ним не пробел
+                            if (s1[i + 1] == ' ') {        //и если за ним пробел
+                                sum += s1[i] - '0';
+                            }
+                            else {
                                 cout << "K8. Data isn't correct\n";
                                 exit(8);
+                            }      
                         }
                         else if (s1[i + 1] == '\0') {                  //если это последний элемент
-                            if (s1[i - 1] != ' ') {                       //и если перед нним не пробел
+                            if (s1[i - 1] == ' ') {                       //и если перед ним пробел
+                                sum += s1[i] - '0';
+                            }
+                            else {
                                 cout << "K8. Data isn't correct\n";
                                 exit(8);
                             }
                         }   
-                        else if (s1[i + 1] != ' ' || s1[i - 1] != ' ') {             //если этот элемент не вначале и не вконце без отступов
-                            cout << "K8. Data isn't correct\n";
-                            exit(8);
+                        else if (s1[i + 1] == ' ' && s1[i - 1] == ' ') {             //если этот элемент не вначале и не вконце без отступов
+                            sum += s1[i] - '0';
                         }
                         else {
-                            sum += s1[i] - '0';
+                            cout << "K8. Data isn't correct\n";
+                            exit(8);
                         }
                 }
                 else if (isdigit(s1[i])) {           //если это цифра и след. не пробел или зав. строки
@@ -208,6 +217,7 @@ int main()
                         firstAlph = true;
                     }
                     cout << words[f] << " ";
+                    FileRecord<< words[f] << " ";
                 }
         }
             cout << sum;
